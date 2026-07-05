@@ -62,24 +62,51 @@ floor_texture.wrapS = THREE.RepeatWrapping;
 floor_texture.wrapT = THREE.RepeatWrapping;
 
 
+const back_wall_texture = loader.load('texture4.jpg');
+
+back_wall_texture.wrapS = THREE.ClampToEdgeWrapping;
+back_wall_texture.wrapT = THREE.ClampToEdgeWrapping;
+
+back_wall_texture.encoding = THREE.sRGBColorSpace;
+back_wall_texture.anisotropy = 16;
+back_wall_texture.magFilter = THREE.LinearFilter;
+back_wall_texture.minFilter = THREE.LinearMipMapLinearFilter;
+back_wall_texture.repeat.x = -1;
+back_wall_texture.offset.x = 1;
+
+
 const floor_geo = new THREE.PlaneGeometry(14, 8);
-const floor_material = new THREE.MeshStandardMaterial({ map: floor_texture, roughness: 0.8, metalness: 0.1, side: THREE.DoubleSide });
+const floor_material = new THREE.MeshStandardMaterial({ map: floor_texture, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide });
 const floor_mesh = new THREE.Mesh(floor_geo, floor_material);
 floor_mesh.rotation.x = -Math.PI / 2; // Rotate to lay flat
 
+
+
 const front_wallgeo = new THREE.PlaneGeometry(14, 3);
-const frontwall_material = new THREE.MeshStandardMaterial({ color: '#7F82BB', side: THREE.DoubleSide });
+const frontwall_material = new THREE.MeshStandardMaterial({ color: '#cdcbcb', side: THREE.DoubleSide });
 const frontwall_mesh = new THREE.Mesh(front_wallgeo, frontwall_material);
 frontwall_mesh.position.set(0, 1.5, 4);
 
 
 
-const back_wallgeo = new THREE.PlaneGeometry(14, 3);
-const backwall_material = new THREE.MeshStandardMaterial({ color: '#7F82BB', side: THREE.DoubleSide });
+const back_wallgeo = new THREE.PlaneGeometry(12, 3);
+const backwall_material = new THREE.MeshStandardMaterial({ map: back_wall_texture, roughness: 0.2, metalness: 0.1, color: '#ffffff', side: THREE.BackSide });
 const backwall_mesh = new THREE.Mesh(back_wallgeo, backwall_material);
-backwall_mesh.position.set(0, 1.5, -4);
+backwall_mesh.position.set(-1.0, 1.5, -4);
 backwall_mesh.rotation.y = Math.PI;//180 degree;
 
+
+const back_wall_rightgeo = new THREE.PlaneGeometry(2.0, 3);
+const backwall_right_material = new THREE.MeshStandardMaterial({ color: '#5c1b1b', side: THREE.DoubleSide });
+const backwall_right_mesh = new THREE.Mesh(back_wall_rightgeo, backwall_right_material);
+backwall_right_mesh.position.set(6.0, 1.5, -4);
+backwall_right_mesh.rotation.y = Math.PI;//180 degree;
+
+const backwall_back_geo = new THREE.PlaneGeometry(14, 3);
+const backwall_back_material = new THREE.MeshStandardMaterial({ color: '#333333', side: THREE.FrontSide });
+const backwall_back_mesh = new THREE.Mesh(backwall_back_geo, backwall_back_material);
+backwall_back_mesh.position.set(0, 1.5, -4.1);
+backwall_back_mesh.rotation.y = Math.PI;//180 degree;
 
 
 
@@ -189,10 +216,25 @@ middlebottomwall_mesh_right.position.set(1.001, 1.5, 2);
 middlebottomwall_mesh_right.rotation.y = Math.PI / 2;//90 degree;
 
 
+const Top_middleWall_texture = loader.load('wall_panel.jpg');
+Top_middleWall_texture.minFilter = THREE.LinearMipMapLinearFilter;
+Top_middleWall_texture.magFilter = THREE.LinearFilter;
+
+Top_middleWall_texture.wrapS = THREE.RepeatWrapping;
+Top_middleWall_texture.wrapT = THREE.RepeatWrapping;
+
+Top_middleWall_texture.encoding = THREE.sRGBColorSpace;
+Top_middleWall_texture.anisotropy = 16;
+
+//new THREE.PointLight(color, intensity, distance, decay)
+const Top_middle_Wall_pointLight = new THREE.PointLight("#FFFFFF", 1.0, 8, 2);
+Top_middle_Wall_pointLight.position.set(3.0, 2.0, -2);
+Top_middle_Wall_pointLight.castShadow = true;
 
 //right 
+
 const topmiddle_wallgeo = new THREE.PlaneGeometry(4, 3);
-const topmiddlewall_material_left = new THREE.MeshStandardMaterial({ color: '#F4F3EF', side: THREE.BackSide });
+const topmiddlewall_material_left = new THREE.MeshStandardMaterial({ map: Top_middleWall_texture, roughness: 0.2, metalness: 0.1, color: '#FFFFFF', side: THREE.BackSide });
 const topmiddlewall_mesh_left = new THREE.Mesh(topmiddle_wallgeo, topmiddlewall_material_left);
 topmiddlewall_mesh_left.position.set(5, 1.5, -2);
 topmiddlewall_mesh_left.rotation.y = Math.PI / 2;//90 degree;
@@ -327,6 +369,7 @@ scene.add(ambientLight);
 scene.add(floor_mesh);
 scene.add(frontwall_mesh);
 scene.add(backwall_mesh);
+scene.add(backwall_right_mesh);
 scene.add(leftwall_mesh);
 scene.add(rightwall_mesh);
 scene.add(leftmiddlewall_mesh_back);
@@ -337,7 +380,8 @@ scene.add(rightmiddlewall_mesh_front);
 scene.add(rightmiddlewall_mesh_back);
 scene.add(middlebottomwall_mesh_left);
 scene.add(topmiddlewall_mesh_right);
-
+scene.add(backwall_back_mesh);
+scene.add(Top_middle_Wall_pointLight);
 const table1 = createTable({ width: 5.0, depth: 2.0, x: -3.2, z: 2 });
 scene.add(table1);
 
