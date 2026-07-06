@@ -1,26 +1,31 @@
 import * as THREE from 'three';
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+
+
+
+
 const w = window.innerWidth;
-const h = window.innerHeight;
+const h =window.innerHeight;
 
 //set up renderer
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(w, h);
+const renderer= new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(w,h);
 
 document.body.appendChild(renderer.domElement);
 
-const stats = new Stats();
+const stats=new Stats();
 document.body.appendChild(stats.dom);
 //set up Scene 
 const scene = new THREE.Scene();
 
-const fov = 75;
-const aspect = w / h;
-const far = 100;
-const near = 0.1;
+const fov=75;
+const aspect= w/h;
+const far =100;
+const near =0.1;
 //set up Camera its z is -5
-const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+const camera= new THREE.PerspectiveCamera(fov,aspect,near,far);
 camera.position.set(10, 8, 10);
 camera.lookAt(0, 1.5, 0);
 
@@ -28,9 +33,9 @@ const roomWidth = 14;
 const roomDepth = 8;
 const roomHeight = 3;
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.03;
+const controls= new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+controls.dampingFactor=0.03;
 
 
 controls.target.set(0, 1.5, 0);     // Look at room center
@@ -52,9 +57,9 @@ controls.autoRotate = false;
 //const floor = new THREE.PlaneGeometry(width,height,widthsegment,heightsegment)
 
 const loader = new THREE.TextureLoader();
-const floor_texture = loader.load('floor_texture.jpg');
-floor_texture.magFilter = THREE.LinearFilter;
-floor_texture.minFilter = THREE.LinearMipmapLinearFilter;
+const floor_texture =loader.load('floor_texture.jpg');
+floor_texture.magFilter=THREE.LinearFilter;
+floor_texture.minFilter =THREE.LinearMipmapLinearFilter;
 
 // Repeat texture pattern (2x2 = repeats 4 times)
 floor_texture.repeat.set(4, 4);
@@ -62,69 +67,69 @@ floor_texture.wrapS = THREE.RepeatWrapping;
 floor_texture.wrapT = THREE.RepeatWrapping;
 
 
-const back_wall_texture = loader.load('texture4.jpg');
+const back_wall_texture=loader.load('texture4.jpg');
 
-back_wall_texture.wrapS = THREE.ClampToEdgeWrapping;
-back_wall_texture.wrapT = THREE.ClampToEdgeWrapping;
+back_wall_texture.wrapS=THREE.ClampToEdgeWrapping;
+back_wall_texture.wrapT=THREE.ClampToEdgeWrapping;
 
-back_wall_texture.encoding = THREE.sRGBColorSpace;
-back_wall_texture.anisotropy = 16;
-back_wall_texture.magFilter = THREE.LinearFilter;
-back_wall_texture.minFilter = THREE.LinearMipMapLinearFilter;
+back_wall_texture.encoding=THREE.sRGBColorSpace;
+back_wall_texture.anisotropy=16;
+back_wall_texture.magFilter=THREE.LinearFilter;
+back_wall_texture.minFilter=THREE.LinearMipMapLinearFilter;
 back_wall_texture.repeat.x = -1;
 back_wall_texture.offset.x = 1;
 
 
-const floor_geo = new THREE.PlaneGeometry(14, 8);
-const floor_material = new THREE.MeshStandardMaterial({ map: floor_texture, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide });
-const floor_mesh = new THREE.Mesh(floor_geo, floor_material);
-floor_mesh.rotation.x = -Math.PI / 2; // Rotate to lay flat
+const floor_geo = new THREE.PlaneGeometry(14,8);
+const floor_material =new THREE.MeshStandardMaterial({map:floor_texture , roughness:0.4,metalness:0.1 ,side:THREE.DoubleSide});
+const floor_mesh= new THREE.Mesh(floor_geo,floor_material);
+floor_mesh.rotation.x=-Math.PI / 2; // Rotate to lay flat
 
 
 
-const front_wallgeo = new THREE.PlaneGeometry(14, 3);
-const frontwall_material = new THREE.MeshStandardMaterial({ color: '#cdcbcb', side: THREE.DoubleSide });
-const frontwall_mesh = new THREE.Mesh(front_wallgeo, frontwall_material);
-frontwall_mesh.position.set(0, 1.5, 4);
+const front_wallgeo=new THREE.PlaneGeometry(14,3);
+const frontwall_material =new THREE.MeshStandardMaterial({color:'#cdcbcb',side:THREE.DoubleSide});
+const  frontwall_mesh =new THREE.Mesh(front_wallgeo,frontwall_material);
+frontwall_mesh.position.set(0,1.5,4);
 
 
 
-const back_wallgeo = new THREE.PlaneGeometry(12, 3);
-const backwall_material = new THREE.MeshStandardMaterial({ map: back_wall_texture, roughness: 0.2, metalness: 0.1, color: '#ffffff', side: THREE.BackSide });
-const backwall_mesh = new THREE.Mesh(back_wallgeo, backwall_material);
-backwall_mesh.position.set(-1.0, 1.5, -4);
-backwall_mesh.rotation.y = Math.PI;//180 degree;
+const back_wallgeo=new THREE.PlaneGeometry(12,3);
+const backwall_material =new THREE.MeshStandardMaterial({map:back_wall_texture,roughness:0.2,metalness:0.1, color:'#ffffff',side:THREE.BackSide});
+const  backwall_mesh =new THREE.Mesh(back_wallgeo,backwall_material);
+backwall_mesh.position.set(-1.0,1.5,-4);
+backwall_mesh.rotation.y=Math.PI;//180 degree;
 
 
-const back_wall_rightgeo = new THREE.PlaneGeometry(2.0, 3);
-const backwall_right_material = new THREE.MeshStandardMaterial({ color: '#5c1b1b', side: THREE.DoubleSide });
-const backwall_right_mesh = new THREE.Mesh(back_wall_rightgeo, backwall_right_material);
-backwall_right_mesh.position.set(6.0, 1.5, -4);
-backwall_right_mesh.rotation.y = Math.PI;//180 degree;
+const back_wall_rightgeo=new THREE.PlaneGeometry(2.0,3);
+const backwall_right_material =new THREE.MeshStandardMaterial({ color:'#5c1b1b',side:THREE.DoubleSide});
+const  backwall_right_mesh =new THREE.Mesh(back_wall_rightgeo,backwall_right_material);
+backwall_right_mesh.position.set(6.0,1.5,-4);
+backwall_right_mesh.rotation.y=Math.PI;//180 degree;
 
-const backwall_back_geo = new THREE.PlaneGeometry(14, 3);
-const backwall_back_material = new THREE.MeshStandardMaterial({ color: '#333333', side: THREE.FrontSide });
-const backwall_back_mesh = new THREE.Mesh(backwall_back_geo, backwall_back_material);
-backwall_back_mesh.position.set(0, 1.5, -4.1);
-backwall_back_mesh.rotation.y = Math.PI;//180 degree;
-
-
+const backwall_back_geo= new THREE.PlaneGeometry(14,3);
+const backwall_back_material =new THREE.MeshStandardMaterial({color:'#333333',side:THREE.FrontSide});
+const  backwall_back_mesh =new THREE.Mesh(backwall_back_geo,backwall_back_material);
+backwall_back_mesh.position.set(0,1.5,-4.1);
+backwall_back_mesh.rotation.y=Math.PI;//180 degree;
 
 
-const left_wallgeo = new THREE.PlaneGeometry(8, 3);
-const leftwall_material = new THREE.MeshStandardMaterial({ color: '#7F82BB', side: THREE.DoubleSide });
-const leftwall_mesh = new THREE.Mesh(left_wallgeo, leftwall_material);
-leftwall_mesh.position.set(-7, 1.5, 0);
-leftwall_mesh.rotation.y = Math.PI / 2;//90 degree;
 
 
-const right_wallgeo = new THREE.PlaneGeometry(8, 3);
-const rightwall_material = new THREE.MeshStandardMaterial({ color: '#7F82BB', side: THREE.DoubleSide });
-const rightwall_mesh = new THREE.Mesh(right_wallgeo, rightwall_material);
-rightwall_mesh.position.set(7, 1.5, 0);
-rightwall_mesh.rotation.y = -Math.PI / 2;//90 degree;
+const left_wallgeo=new THREE.PlaneGeometry(8,3);
+const leftwall_material =new THREE.MeshStandardMaterial({color:'#7F82BB',side:THREE.DoubleSide});
+const  leftwall_mesh =new THREE.Mesh(left_wallgeo,leftwall_material);
+leftwall_mesh.position.set(-7,1.5,0);
+leftwall_mesh.rotation.y=Math.PI/2;//90 degree;
 
-const leftmiddle_texture = loader.load('wall_texture_2.jpg');
+
+const right_wallgeo=new THREE.PlaneGeometry(8,3);
+const rightwall_material =new THREE.MeshStandardMaterial({color:'#7F82BB',side:THREE.DoubleSide});
+const  rightwall_mesh =new THREE.Mesh(right_wallgeo,rightwall_material);
+rightwall_mesh.position.set(7,1.5,0);
+rightwall_mesh.rotation.y=-Math.PI/2;//90 degree;
+
+const leftmiddle_texture=loader.load('wall_texture_2.jpg');
 //leftmiddle_texture.magFilter=THREE.LinearFilter;
 //leftmiddle_texture.minFilter =THREE.LinearMipmapLinearFilter;
 
@@ -139,14 +144,14 @@ leftmiddle_texture.wrapS = THREE.ClampToEdgeWrapping;
 leftmiddle_texture.wrapT = THREE.ClampToEdgeWrapping;
 
 
-const leftmiddlewall_texture_leftside = loader.load('wall_texture_3 (2).jpg');
-leftmiddlewall_texture_leftside.magFilter = THREE.LinearFilter;
-leftmiddlewall_texture_leftside.minFilter = THREE.LinearMipmapLinearFilter;
-leftmiddlewall_texture_leftside.anisotropy = 16;
-leftmiddlewall_texture_leftside.encoding = THREE.sRGBColorSpace;
+const leftmiddlewall_texture_leftside= loader.load('wall_texture_3 (2).jpg');
+leftmiddlewall_texture_leftside.magFilter= THREE.LinearFilter;
+leftmiddlewall_texture_leftside.minFilter= THREE.LinearMipmapLinearFilter;
+leftmiddlewall_texture_leftside.anisotropy=16;
+leftmiddlewall_texture_leftside.encoding=THREE.sRGBColorSpace;
 
-leftmiddlewall_texture_leftside.wrapS = THREE.RepeatWrapping;
-leftmiddlewall_texture_leftside.wrapT = THREE.RepeatWrapping;
+leftmiddlewall_texture_leftside.wrapS=THREE.RepeatWrapping;
+leftmiddlewall_texture_leftside.wrapT=THREE.RepeatWrapping;
 
 
 
@@ -156,104 +161,104 @@ leftmiddlewall_texture_leftside.wrapT = THREE.RepeatWrapping;
 //leftmiddle_texture.wrapS = THREE.RepeatWrapping;
 //leftmiddle_texture.wrapT = THREE.RepeatWrapping;
 //back side of the  left middle wall 
-const leftmiddle_wallgeo = new THREE.PlaneGeometry(7, 3);
+const leftmiddle_wallgeo=new THREE.PlaneGeometry(7,3);
 //const leftmiddlewall_material =new THREE.MeshStandardMaterial({map:leftmiddle_texture , roughness:0.2,metalness:0.1,side:THREE.DoubleSide});
 
 const leftmiddlewall_material_back = new THREE.MeshStandardMaterial({
-    map: leftmiddle_texture,
-    color: 0xFFFFFF,           // Pure white base color
-    roughness: 0.2,            // Reduce from 0.2 for less matte
-    metalness: 0,              // Keep at 0
-    side: THREE.BackSide,
-
+  map: leftmiddle_texture,
+  color: 0xFFFFFF,           // Pure white base color
+  roughness: 0.2,            // Reduce from 0.2 for less matte
+  metalness: 0,              // Keep at 0
+  side: THREE.BackSide,
+ 
 });
 
-const leftmiddlewall_mesh_back = new THREE.Mesh(leftmiddle_wallgeo, leftmiddlewall_material_back);
-leftmiddlewall_mesh_back.position.set(-2.5, 1.5, 0);
-leftmiddlewall_mesh_back.rotation.y = Math.PI;//180 degree;
+const leftmiddlewall_mesh_back =new THREE.Mesh(leftmiddle_wallgeo,leftmiddlewall_material_back);
+leftmiddlewall_mesh_back.position.set(-2.5,1.5,0);
+leftmiddlewall_mesh_back.rotation.y=Math.PI;//180 degree;
 
 //back side of the  left middle wall 
 
 const frontside_middle_left_wallmaterial = new THREE.MeshStandardMaterial({
-    map: leftmiddlewall_texture_leftside,
-    color: '#FFFFFF', // match your other wall color
-    side: THREE.BackSide,
-    roughness: 0.2,
-    metalness: 0,
+  map:leftmiddlewall_texture_leftside,
+  color: '#FFFFFF', // match your other wall color
+  side: THREE.BackSide,
+  roughness:0.2,
+  metalness:0,
 });
 const leftmiddlewall_front = new THREE.Mesh(leftmiddle_wallgeo, frontside_middle_left_wallmaterial);
 leftmiddlewall_front.position.set(-2.5, 1.5, -0.001);
 
 
 //front side 
-const rightmiddle_wallgeo = new THREE.PlaneGeometry(4.0, 3);
-const rightmiddlewall_material_front = new THREE.MeshStandardMaterial({ color: '#7a4545', side: THREE.BackSide });
-const rightmiddlewall_mesh_front = new THREE.Mesh(rightmiddle_wallgeo, rightmiddlewall_material_front);
-rightmiddlewall_mesh_front.position.set(5.0, 1.5, 0);
-rightmiddlewall_mesh_front.rotation.y = Math.PI;//180 degree;
+const rightmiddle_wallgeo=new THREE.PlaneGeometry(4.0,3);
+const rightmiddlewall_material_front =new THREE.MeshStandardMaterial({color:'#7a4545',side:THREE.BackSide});
+const rightmiddlewall_mesh_front =new THREE.Mesh(rightmiddle_wallgeo,rightmiddlewall_material_front);
+rightmiddlewall_mesh_front.position.set(5.0,1.5,0);
+rightmiddlewall_mesh_front.rotation.y=Math.PI;//180 degree;
 
 //back side 
 
-const rightmiddlewall_material_back = new THREE.MeshStandardMaterial({ color: '#45557a', side: THREE.BackSide });
-const rightmiddlewall_mesh_back = new THREE.Mesh(rightmiddle_wallgeo, rightmiddlewall_material_back);
-rightmiddlewall_mesh_back.position.set(5.0, 1.5, -0.001);
+const rightmiddlewall_material_back =new THREE.MeshStandardMaterial({color:'#45557a',side:THREE.BackSide});
+const rightmiddlewall_mesh_back =new THREE.Mesh(rightmiddle_wallgeo,rightmiddlewall_material_back);
+rightmiddlewall_mesh_back.position.set(5.0,1.5,-0.001);
 
 
 
 
 
 //left
-const middlebottom_wallgeo = new THREE.PlaneGeometry(4, 3);
-const middlebottomwall_material_left = new THREE.MeshStandardMaterial({ color: '#c0beb6', side: THREE.BackSide });
-const middlebottomwall_mesh_left = new THREE.Mesh(middlebottom_wallgeo, middlebottomwall_material_left);
+const middlebottom_wallgeo=new THREE.PlaneGeometry(4,3);
+const middlebottomwall_material_left =new THREE.MeshStandardMaterial({color:'#c0beb6',side:THREE.BackSide});
+const  middlebottomwall_mesh_left =new THREE.Mesh(middlebottom_wallgeo,middlebottomwall_material_left);
 middlebottomwall_mesh_left.position.set(1, 1.5, 2);
-middlebottomwall_mesh_left.rotation.y = Math.PI / 2;//90 degree;
+middlebottomwall_mesh_left.rotation.y=Math.PI/2;//90 degree;
 
 //right
-const middlebottomwall_material_right = new THREE.MeshStandardMaterial({ color: '#46294d', side: THREE.FrontSide });
-const middlebottomwall_mesh_right = new THREE.Mesh(middlebottom_wallgeo, middlebottomwall_material_right);
+const middlebottomwall_material_right =new THREE.MeshStandardMaterial({color:'#46294d',side:THREE.FrontSide});
+const  middlebottomwall_mesh_right =new THREE.Mesh(middlebottom_wallgeo,middlebottomwall_material_right);
 middlebottomwall_mesh_right.position.set(1.001, 1.5, 2);
-middlebottomwall_mesh_right.rotation.y = Math.PI / 2;//90 degree;
+middlebottomwall_mesh_right.rotation.y=Math.PI/2;//90 degree;
 
 
-const Top_middleWall_texture = loader.load('wall_panel.jpg');
-Top_middleWall_texture.minFilter = THREE.LinearMipMapLinearFilter;
-Top_middleWall_texture.magFilter = THREE.LinearFilter;
+const Top_middleWall_texture=loader.load('wall_panel.jpg');
+Top_middleWall_texture.minFilter=THREE.LinearMipMapLinearFilter;
+Top_middleWall_texture.magFilter=THREE.LinearFilter;
 
-Top_middleWall_texture.wrapS = THREE.RepeatWrapping;
-Top_middleWall_texture.wrapT = THREE.RepeatWrapping;
+Top_middleWall_texture.wrapS=THREE.RepeatWrapping;
+Top_middleWall_texture.wrapT=THREE.RepeatWrapping;
 
-Top_middleWall_texture.encoding = THREE.sRGBColorSpace;
-Top_middleWall_texture.anisotropy = 16;
+Top_middleWall_texture.encoding=THREE.sRGBColorSpace;
+Top_middleWall_texture.anisotropy=16;
 
 //new THREE.PointLight(color, intensity, distance, decay)
-const Top_middle_Wall_pointLight = new THREE.PointLight("#FFFFFF", 1.0, 8, 2);
-Top_middle_Wall_pointLight.position.set(3.0, 2.0, -2);
-Top_middle_Wall_pointLight.castShadow = true;
+const Top_middle_Wall_pointLight =new THREE.PointLight("#FFFFFF",1.0,8,2);
+Top_middle_Wall_pointLight.position.set(3.0,2.0,-2);
+Top_middle_Wall_pointLight.castShadow=true;
 
 //right 
 
-const topmiddle_wallgeo = new THREE.PlaneGeometry(4, 3);
-const topmiddlewall_material_left = new THREE.MeshStandardMaterial({ map: Top_middleWall_texture, roughness: 0.2, metalness: 0.1, color: '#FFFFFF', side: THREE.BackSide });
-const topmiddlewall_mesh_left = new THREE.Mesh(topmiddle_wallgeo, topmiddlewall_material_left);
+const topmiddle_wallgeo=new THREE.PlaneGeometry(4,3);
+const topmiddlewall_material_left =new THREE.MeshStandardMaterial({map:Top_middleWall_texture,roughness:0.2,metalness:0.1,color:'#FFFFFF',side:THREE.BackSide});
+const  topmiddlewall_mesh_left =new THREE.Mesh(topmiddle_wallgeo,topmiddlewall_material_left);
 topmiddlewall_mesh_left.position.set(5, 1.5, -2);
-topmiddlewall_mesh_left.rotation.y = Math.PI / 2;//90 degree;
+topmiddlewall_mesh_left.rotation.y=Math.PI/2;//90 degree;
 
 
 
 
 //right 
 
-const topmiddlewall_material_right = new THREE.MeshStandardMaterial({ color: '#7b553b', side: THREE.FrontSide });
-const topmiddlewall_mesh_right = new THREE.Mesh(topmiddle_wallgeo, topmiddlewall_material_right);
+const topmiddlewall_material_right =new THREE.MeshStandardMaterial({color:'#7b553b',side:THREE.FrontSide});
+const  topmiddlewall_mesh_right =new THREE.Mesh(topmiddle_wallgeo,topmiddlewall_material_right);
 topmiddlewall_mesh_right.position.set(5.001, 1.5, -2);
-topmiddlewall_mesh_right.rotation.y = Math.PI / 2;//90 degree;
+topmiddlewall_mesh_right.rotation.y=Math.PI/2;//90 degree;
 
 
 
 
 
-const ambientLight = new THREE.AmbientLight('#FFFFFF', 1.5);
+const ambientLight = new THREE.AmbientLight('#FFFFFF', 1.5); 
 const directionalLight = new THREE.DirectionalLight('#FFFFFF', 2.0);
 directionalLight.position.set(10, 15, 10);
 directionalLight.castShadow = true;
@@ -279,16 +284,16 @@ scene.add(pointLight);
 
 //const table_texture=loader.load('./table_texture2.jpg');
 const table_texture = loader.load(
-    'table_texture.jpg',
-    () => console.log('Texture loaded'),
-    undefined,
-    (err) => console.error('Texture failed', err)
+  'table_texture.jpg',
+  () => console.log('Texture loaded'),
+  undefined,
+  (err) => console.error('Texture failed', err)
 );
-table_texture.magFilter = THREE.LinearFilter;
+table_texture.magFilter=THREE.LinearFilter;
 table_texture.minFilter = THREE.LinearMipmapLinearFilter;
-table_texture.repeat.set(2, 2);
-table_texture.wrapS = THREE.RepeatWrapping;
-table_texture.wrapT = THREE.RepeatWrapping;
+table_texture.repeat.set(2,2);
+table_texture.wrapS=THREE.RepeatWrapping;
+table_texture.wrapT=THREE.RepeatWrapping;
 
 
 
@@ -297,75 +302,143 @@ table_texture.wrapT = THREE.RepeatWrapping;
 
 
 function createTable({
-    width = 2.4,          // tabletop width (x-axis)
-    depth = 1.2,          // tabletop depth (z-axis)
-    height = 0.75,        // total table height (floor to top surface)
-    topThickness = 0.08,  // thickness of the tabletop slab
-    legThickness = 0.08,  // width/depth of each leg
-    topColor = '#8B5A2B', // tabletop color
-    legColor = '#5C3A21', // leg color
-    x = 0,                // world position x
-    y = 0,                // world position y (usually 0 = floor level)
-    z = 0,                // world position z
-    rotationY = 0,        // rotate the whole table around Y axis (radians)
+  width = 2.4,          // tabletop width (x-axis)
+  depth = 1.2,          // tabletop depth (z-axis)
+  height = 0.75,        // total table height (floor to top surface)
+  topThickness = 0.08,  // thickness of the tabletop slab
+  legThickness = 0.08,  // width/depth of each leg
+  topColor = '#8B5A2B', // tabletop color
+  legColor = '#5C3A21', // leg color
+  x = 0,                // world position x
+  y = 0,                // world position y (usually 0 = floor level)
+  z = 0,                // world position z
+  rotationY = 0,        // rotate the whole table around Y axis (radians)
 } = {}) {
-    const table = new THREE.Group();
+  const table = new THREE.Group();
+ 
+  // --- Tabletop ---
+  const topGeo = new THREE.BoxGeometry(width, topThickness, depth);
+  const topMat = new THREE.MeshStandardMaterial({
+    map:table_texture,
+    color: '#ffffff8e',
+    roughness: 0.6,
+    metalness: 0.05,
+  });
+  const top = new THREE.Mesh(topGeo, topMat);
+  // BoxGeometry is centered on its own origin, so offset by half
+  // the thickness to make `height` represent the top SURFACE height.
+  top.position.set(0, height - topThickness / 2, 0);
+  top.castShadow = true;
+  top.receiveShadow = true;
+  table.add(top);
+ 
+  // --- Legs ---
+  const legHeight = height - topThickness;
+  const legGeo = new THREE.BoxGeometry(legThickness, legHeight, legThickness);
+  const legMat = new THREE.MeshStandardMaterial({
+    color: legColor,
+    roughness: 0.7,
+    metalness: 0.05,
+  });
+ 
+  const insetX = width / 2 - 0.15;
+  const insetZ = depth / 2 - 0.15;
+  const legOffsets = [
+    [ insetX,  insetZ],
+    [-insetX,  insetZ],
+    [ insetX, -insetZ],
+    [-insetX, -insetZ],
+  ];
+ 
+  legOffsets.forEach(([lx, lz]) => {
+    const leg = new THREE.Mesh(legGeo, legMat);
+    leg.position.set(lx, legHeight / 2, lz);
+    leg.castShadow = true;
+    leg.receiveShadow = true;
+    table.add(leg);
+  });
+ 
+  table.position.set(x, y, z);
+  table.rotation.y = rotationY;
+ 
+  return table;
+}
 
-    // --- Tabletop ---
-    const topGeo = new THREE.BoxGeometry(width, topThickness, depth);
-    const topMat = new THREE.MeshStandardMaterial({
-        map: table_texture,
-        color: '#ffffff8e',
-        roughness: 0.6,
-        metalness: 0.05,
-    });
-    const top = new THREE.Mesh(topGeo, topMat);
-    // BoxGeometry is centered on its own origin, so offset by half
-    // the thickness to make `height` represent the top SURFACE height.
-    top.position.set(0, height - topThickness / 2, 0);
-    top.castShadow = true;
-    top.receiveShadow = true;
-    table.add(top);
 
-    // --- Legs ---
-    const legHeight = height - topThickness;
-    const legGeo = new THREE.BoxGeometry(legThickness, legHeight, legThickness);
-    const legMat = new THREE.MeshStandardMaterial({
-        color: legColor,
-        roughness: 0.7,
-        metalness: 0.05,
-    });
 
-    const insetX = width / 2 - 0.15;
-    const insetZ = depth / 2 - 0.15;
-    const legOffsets = [
-        [insetX, insetZ],
-        [-insetX, insetZ],
-        [insetX, -insetZ],
-        [-insetX, -insetZ],
-    ];
+const sofa_texture = loader.load('sofa_fabric_3.jpg');
+sofa_texture.magFilter = THREE.LinearFilter;
+sofa_texture.minFilter = THREE.LinearMipmapLinearFilter;
+sofa_texture.wrapS = THREE.RepeatWrapping;
+sofa_texture.wrapT = THREE.RepeatWrapping;
+sofa_texture.repeat.set(2, 1);
 
-    legOffsets.forEach(([lx, lz]) => {
-        const leg = new THREE.Mesh(legGeo, legMat);
-        leg.position.set(lx, legHeight / 2, lz);
-        leg.castShadow = true;
-        leg.receiveShadow = true;
-        table.add(leg);
-    });
+function createSofa({
+  width = 2.2,
+  depth = 0.9,
+  seatHeight = 0.45,
+  backHeight = 0.55,
+  armWidth = 0.2,
+  color = '#7a6a58',
+  x = 0,
+  y = 0,
+  z = 0,
+  rotationY = 0,
+} = {}) {
+  const sofa = new THREE.Group();
 
-    table.position.set(x, y, z);
-    table.rotation.y = rotationY;
+  const sofaMat = new THREE.MeshStandardMaterial({
+    map: sofa_texture,
+    color: '#ffffff',
+    roughness: 0.9,
+    metalness: 0.0,
+  });
 
-    return table;
+  // Seat base
+  const seatGeo = new THREE.BoxGeometry(width, seatHeight, depth);
+  const seat = new THREE.Mesh(seatGeo, sofaMat);
+  seat.position.set(0, seatHeight / 2, 0);
+  seat.castShadow = true;
+  seat.receiveShadow = true;
+  sofa.add(seat);
+
+  // Backrest
+  const backGeo = new THREE.BoxGeometry(width, backHeight, 0.2);
+  const back = new THREE.Mesh(backGeo, sofaMat);
+  back.position.set(0, seatHeight + backHeight / 2, -depth / 2 + 0.1);
+  back.castShadow = true;
+  sofa.add(back);
+
+  // Armrests
+  const armGeo = new THREE.BoxGeometry(armWidth, seatHeight + 0.25, depth);
+  [width / 2 - armWidth / 2, -width / 2 + armWidth / 2].forEach((ax) => {
+    const arm = new THREE.Mesh(armGeo, sofaMat);
+    arm.position.set(ax, (seatHeight + 0.25) / 2, 0);
+    arm.castShadow = true;
+    sofa.add(arm);
+  });
+
+  // Legs
+  const legGeo = new THREE.BoxGeometry(0.06, 0.12, 0.06);
+  const legMat = new THREE.MeshStandardMaterial({ color: '#2b1d14', roughness: 0.6 });
+  const insetX = width / 2 - 0.15;
+  const insetZ = depth / 2 - 0.1;
+  [[insetX, insetZ], [-insetX, insetZ], [insetX, -insetZ], [-insetX, -insetZ]].forEach(([lx, lz]) => {
+    const leg = new THREE.Mesh(legGeo, legMat);
+    leg.position.set(lx, -0.06, lz);
+    leg.castShadow = true;
+    sofa.add(leg);
+  });
+
+  sofa.position.set(x, y, z);
+  sofa.rotation.y = rotationY;
+  return sofa;
 }
 
 
 
 
-
-
-
-scene.add(ambientLight);
+scene.add(ambientLight); 
 scene.add(floor_mesh);
 scene.add(frontwall_mesh);
 scene.add(backwall_mesh);
@@ -382,26 +455,37 @@ scene.add(middlebottomwall_mesh_left);
 scene.add(topmiddlewall_mesh_right);
 scene.add(backwall_back_mesh);
 scene.add(Top_middle_Wall_pointLight);
-const table1 = createTable({ width: 5.0, depth: 2.0, x: -3.2, z: 2 });
+const table1 = createTable({ width:5.0,depth:2.0 ,x: -3.2, z: 2 });
 scene.add(table1);
-
+ 
 const table2 = createTable({
-    width: 1.6,
-    depth: 1.6,
-    topColor: '#3b2a1a',
-    legColor: '#241a10',
-    x: -4.5,
-    z: -2,
-    rotationY: Math.PI / 4,
+  width: 1.6,
+  depth: 1.6,
+  topColor: '#3b2a1a',
+  legColor: '#241a10',
+  x: -4.5,
+  z: -2,
+  rotationY: Math.PI / 4,
 });
 scene.add(table2);
-function AnimateFrame(t = 0) {
+
+const sofa1=createSofa({width:3.5,x:1.5,z:-3});
+
+
+scene.add(sofa1);
+scene.add(sofa2);
+
+function AnimateFrame(t=0)
+{
     requestAnimationFrame(AnimateFrame);
-    // mesh.rotation.y=t*0.001;
-    renderer.render(scene, camera);
+   // mesh.rotation.y=t*0.001;
+    renderer.render(scene,camera);
     stats.update();
     controls.update();
 }
+
+
+
 
 AnimateFrame();
 
