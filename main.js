@@ -672,10 +672,10 @@ const table2 = createTable({
 scene.add(table2);
 
 const sofa1=createSofa({width:3.5,x:1.5,z:-3});
-
+const sofa2=createSofa({width:2.5,x:4.0,z:-1.5,rotationY:-Math.PI/2});
 
 scene.add(sofa1);
-
+scene.add(sofa2);
 
 function AnimateFrame(t=0)
 {
