@@ -436,6 +436,208 @@ function createSofa({
 }
 
 
+// ---------- Chairs ----------
+ 
+// Converts a chair's local offset (relative to a table's own center/orientation)
+// into a world position + facing rotation, accounting for the table's rotationY.
+function localOffsetToWorld(lx, lz, tableX, tableZ, tableRotY) {
+  const wx = tableX + lx * Math.cos(tableRotY) + lz * Math.sin(tableRotY);
+  const wz = tableZ - lx * Math.sin(tableRotY) + lz * Math.cos(tableRotY);
+  // Chair's default "front" faces +z (0 rotation). Point it back toward the table center.
+  const facingRotY = tableRotY + Math.atan2(-lx, -lz);
+  return { x: wx, z: wz, rotationY: facingRotY };
+}
+ 
+// Builds an array of {lx, lz} local chair slots around a rectangular table.
+// mode 'perimeter' -> one chair centered on each of the 4 sides.
+// mode 'longsides' -> `perSide` chairs spaced along the two long (width) sides only.
+function getChairSlots({ width, depth, offset = 0.5, mode = 'perimeter', perSide = 2 }) {
+  const halfW = width / 2;
+  const halfD = depth / 2;
+  const slots = [];
+ 
+  if (mode === 'perimeter') {
+    slots.push({ lx: 0, lz: halfD + offset });    // front
+    slots.push({ lx: 0, lz: -(halfD + offset) }); // back
+    slots.push({ lx: halfW + offset, lz: 0 });    // right
+    slots.push({ lx: -(halfW + offset), lz: 0 }); // left
+  } else if (mode === 'longsides') {
+    const usableWidth = width * 0.7;
+    for (let i = 0; i < perSide; i++) {
+      const t = perSide === 1 ? 0 : i / (perSide - 1) - 0.5; // -0.5..0.5
+      const lx = t * usableWidth;
+      slots.push({ lx, lz: halfD + offset });
+      slots.push({ lx, lz: -(halfD + offset) });
+    }
+  }
+ 
+  return slots;
+}
+ 
+function addChairsAroundTable({ table, chairFactory, slotOptions = {}, chairOptions = {} }) {
+  const slots = getChairSlots({ width: table.width, depth: table.depth, ...slotOptions });
+  const group = new THREE.Group();
+ 
+  slots.forEach(({ lx, lz }) => {
+    const { x, z, rotationY } = localOffsetToWorld(lx, lz, table.x, table.z, table.rotationY || 0);
+    const chair = chairFactory({ ...chairOptions, x, y: table.y || 0, z, rotationY });
+    group.add(chair);
+  });
+ 
+  return group;
+}
+// Office-style task chair with padded seat/back, a central pedestal column and a 5-star wheeled base.
+function createOfficeChair({
+  seatWidth = 0.5,
+  seatDepth = 0.48,
+  seatHeight = 0.48,
+  backHeight = 0.55,
+  color = '#2b2b2b',
+  frameColor = '#1a1a1a',
+  x = 0,
+  y = 0,
+  z = 0,
+  rotationY = 0,
+} = {}) {
+  const chair = new THREE.Group();
+ 
+  const padMat = new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.1 });
+  const frameMat = new THREE.MeshStandardMaterial({ color: frameColor, roughness: 0.4, metalness: 0.6 });
+ 
+  // Seat cushion
+  const seatGeo = new THREE.BoxGeometry(seatWidth, 0.08, seatDepth);
+  const seat = new THREE.Mesh(seatGeo, padMat);
+  seat.position.set(0, seatHeight, 0);
+  seat.castShadow = true;
+  seat.receiveShadow = true;
+  chair.add(seat);
+ 
+  // Backrest (slightly reclined)
+  const backGeo = new THREE.BoxGeometry(seatWidth * 0.9, backHeight, 0.08);
+  const back = new THREE.Mesh(backGeo, padMat);
+  back.position.set(0, seatHeight + backHeight / 2, -seatDepth / 2 + 0.05);
+  back.rotation.x = -0.12;
+  back.castShadow = true;
+  chair.add(back);
+ 
+  // Armrests
+  const armGeo = new THREE.BoxGeometry(0.05, 0.22, seatDepth * 0.6);
+  [seatWidth / 2 - 0.02, -(seatWidth / 2 - 0.02)].forEach((ax) => {
+    const arm = new THREE.Mesh(armGeo, frameMat);
+    arm.position.set(ax, seatHeight + 0.15, 0);
+    arm.castShadow = true;
+    chair.add(arm);
+  });
+ 
+  // Central pedestal column
+  const pedestalHeight = seatHeight - 0.08;
+  const pedestalGeo = new THREE.CylinderGeometry(0.03, 0.03, pedestalHeight, 12);
+  const pedestal = new THREE.Mesh(pedestalGeo, frameMat);
+  pedestal.position.set(0, pedestalHeight / 2 + 0.05, 0);
+  pedestal.castShadow = true;
+  chair.add(pedestal);
+ 
+  // 5-star wheeled base
+  const starRadius = 0.28;
+  const legCount = 5;
+  const legGeo = new THREE.BoxGeometry(starRadius, 0.03, 0.05);
+  const wheelGeo = new THREE.SphereGeometry(0.035, 8, 8);
+  for (let i = 0; i < legCount; i++) {
+    const angle = (i / legCount) * Math.PI * 2;
+    const legArm = new THREE.Mesh(legGeo, frameMat);
+    legArm.position.set(
+      Math.cos(angle) * starRadius / 2,
+      0.05,
+      Math.sin(angle) * starRadius / 2
+    );
+    legArm.rotation.y = angle;
+    legArm.castShadow = true;
+    chair.add(legArm);
+ 
+    const wheel = new THREE.Mesh(wheelGeo, frameMat);
+    wheel.position.set(Math.cos(angle) * starRadius, 0.035, Math.sin(angle) * starRadius);
+    wheel.castShadow = true;
+    chair.add(wheel);
+  }
+ 
+  chair.position.set(x, y, z);
+  chair.rotation.y = rotationY;
+  return chair;
+}
+
+
+// Simple wood/fabric chair with a curved (bent) backrest, suited to smaller tables.
+function createCurvedBackChair({
+  seatWidth = 0.42,
+  seatDepth = 0.42,
+  seatHeight = 0.45,
+  backHeight = 0.42,
+  legThickness = 0.04,
+  color = '#6b4c3a',
+  x = 0,
+  y = 0,
+  z = 0,
+  rotationY = 0,
+} = {}) {
+  const chair = new THREE.Group();
+ 
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.05 });
+ 
+  // Seat
+  const seatGeo = new THREE.BoxGeometry(seatWidth, 0.05, seatDepth);
+  const seat = new THREE.Mesh(seatGeo, mat);
+  seat.position.set(0, seatHeight, 0);
+  seat.castShadow = true;
+  seat.receiveShadow = true;
+  chair.add(seat);
+ 
+  // Curved backrest: an open partial cylinder shell that cups around the sitter's back.
+  const backRadius = seatWidth / 2 + 0.05;
+  const thetaLength = 2.3; // ~130 degrees of arc
+  const thetaStart = Math.PI / 2 - thetaLength / 2;
+  const backGeo = new THREE.CylinderGeometry(
+    backRadius, backRadius, backHeight, 20, 1, true, thetaStart, thetaLength
+  );
+  const back = new THREE.Mesh(backGeo, mat);
+  back.position.set(0, seatHeight + backHeight / 2, -(seatDepth / 2 + backRadius - 0.08));
+  back.castShadow = true;
+  chair.add(back);
+ 
+  // Legs
+  const legGeo = new THREE.BoxGeometry(legThickness, seatHeight, legThickness);
+  const insetX = seatWidth / 2 - legThickness / 2 - 0.02;
+  const insetZ = seatDepth / 2 - legThickness / 2 - 0.02;
+  [[insetX, insetZ], [-insetX, insetZ], [insetX, -insetZ], [-insetX, -insetZ]].forEach(([lx, lz]) => {
+    const leg = new THREE.Mesh(legGeo, mat);
+    leg.position.set(lx, seatHeight / 2, lz);
+    leg.castShadow = true;
+    chair.add(leg);
+  });
+ 
+  chair.position.set(x, y, z);
+  chair.rotation.y = rotationY;
+  return chair;
+}
+
+
+
+const table1Chairs = addChairsAroundTable({
+  table: { width: 5.0, depth: 2.0, x: -3.2, z: 2, rotationY: 0 },
+  chairFactory: createOfficeChair,
+  slotOptions: { mode: 'longsides', perSide: 3, offset: 0.4 },
+  chairOptions: { color: '#3a3a3a' },
+});
+scene.add(table1Chairs);
+
+
+
+const table2Chairs = addChairsAroundTable({
+  table: { width: 1.6, depth: 1.6, x: -4.5, z: -2, rotationY: Math.PI / 4 },
+  chairFactory: createCurvedBackChair,
+  slotOptions: { mode: 'perimeter', offset: 0.35 },
+  chairOptions: { color: '#6b4c3a' },
+});
+scene.add(table2Chairs);
 
 
 scene.add(ambientLight); 
@@ -473,7 +675,7 @@ const sofa1=createSofa({width:3.5,x:1.5,z:-3});
 
 
 scene.add(sofa1);
-scene.add(sofa2);
+
 
 function AnimateFrame(t=0)
 {
