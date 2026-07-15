@@ -12,7 +12,13 @@ const h = window.innerHeight;
 //set up renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(w, h);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // sharper on high-DPI screens
+renderer.outputColorSpace = THREE.SRGBColorSpace;   // correct color output — fixes dark/washed textures
+renderer.toneMapping = THREE.ACESFilmicToneMapping; // natural brightness falloff instead of flat/dark
+renderer.toneMappingExposure = 1.15;                // nudge overall scene brightness up
 
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 const stats = new Stats();
@@ -44,6 +50,19 @@ controls.maxDistance = 25;           // Far-away limit
 controls.enableDamping = true;
 controls.dampingFactor = 0.03;
 controls.autoRotate = false;
+window.addEventListener('resize', onWindowResize);
+
+function onWindowResize() {
+    const newW = window.innerWidth;
+    const newH = window.innerHeight;
+
+    camera.aspect = newW / newH;
+    camera.updateProjectionMatrix();   // required after changing aspect
+
+    renderer.setSize(newW, newH);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+}
+
 //controls.update();
 
 //const geometry = new THREE.BoxGeometry(2,2,2);
@@ -61,21 +80,31 @@ const floor_texture = loader.load('floor_texture.jpg');
 floor_texture.magFilter = THREE.LinearFilter;
 floor_texture.minFilter = THREE.LinearMipmapLinearFilter;
 
+
 // Repeat texture pattern (2x2 = repeats 4 times)
 floor_texture.repeat.set(4, 4);
 floor_texture.wrapS = THREE.RepeatWrapping;
 floor_texture.wrapT = THREE.RepeatWrapping;
 
+const left_wall_texture = loader.load('left-wallTexture.jpg');
+
+left_wall_texture.wrapS = THREE.ClampToEdgeWrapping;
+left_wall_texture.wrapT = THREE.ClampToEdgeWrapping;
+
+left_wall_texture.colorSpace = THREE.SRGBColorSpace;
+left_wall_texture.anisotropy = 16;
+left_wall_texture.magFilter = THREE.LinearFilter;
+left_wall_texture.minFilter = THREE.LinearMipmapLinearFilter;
 
 const back_wall_texture = loader.load('texture4.jpg');
 
 back_wall_texture.wrapS = THREE.ClampToEdgeWrapping;
 back_wall_texture.wrapT = THREE.ClampToEdgeWrapping;
 
-back_wall_texture.encoding = THREE.sRGBColorSpace;
+back_wall_texture.colorSpace = THREE.SRGBColorSpace;
 back_wall_texture.anisotropy = 16;
 back_wall_texture.magFilter = THREE.LinearFilter;
-back_wall_texture.minFilter = THREE.LinearMipMapLinearFilter;
+back_wall_texture.minFilter = THREE.LinearMipmapLinearFilter;
 back_wall_texture.repeat.x = -1;
 back_wall_texture.offset.x = 1;
 
@@ -84,11 +113,11 @@ const floor_geo = new THREE.PlaneGeometry(14, 8);
 const floor_material = new THREE.MeshStandardMaterial({ map: floor_texture, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide });
 const floor_mesh = new THREE.Mesh(floor_geo, floor_material);
 floor_mesh.rotation.x = -Math.PI / 2; // Rotate to lay flat
-
+floor_mesh.receiveShadow = true; // surfaces that should receive shadows have reciveShadow=true
 
 
 const front_wallgeo = new THREE.PlaneGeometry(14, 3);
-const frontwall_material = new THREE.MeshStandardMaterial({ color: '#cdcbcb', side: THREE.DoubleSide });
+const frontwall_material = new THREE.MeshStandardMaterial({ map: left_wall_texture, color: '#d0d0d0', side: THREE.DoubleSide });
 const frontwall_mesh = new THREE.Mesh(front_wallgeo, frontwall_material);
 frontwall_mesh.position.set(0, 1.5, 4);
 
@@ -116,8 +145,9 @@ backwall_back_mesh.rotation.y = Math.PI;//180 degree;
 
 
 
+
 const left_wallgeo = new THREE.PlaneGeometry(8, 3);
-const leftwall_material = new THREE.MeshStandardMaterial({ color: '#7F82BB', side: THREE.DoubleSide });
+const leftwall_material = new THREE.MeshStandardMaterial({ map: left_wall_texture, color: '#cbcaca', roughness: 0.3, metalness: 0.5, side: THREE.DoubleSide });
 const leftwall_mesh = new THREE.Mesh(left_wallgeo, leftwall_material);
 leftwall_mesh.position.set(-7, 1.5, 0);
 leftwall_mesh.rotation.y = Math.PI / 2;//90 degree;
@@ -137,7 +167,7 @@ const leftmiddle_texture = loader.load('wall_texture_2.jpg');
 leftmiddle_texture.magFilter = THREE.LinearFilter;
 leftmiddle_texture.minFilter = THREE.LinearMipmapLinearFilter;
 leftmiddle_texture.anisotropy = 16;  // Improves clarity at angles
-leftmiddle_texture.encoding = THREE.sRGBColorSpace;  // Correct color space
+leftmiddle_texture.colorSpace = THREE.SRGBColorSpace;  // Correct color space
 
 // Disable wrapping
 leftmiddle_texture.wrapS = THREE.ClampToEdgeWrapping;
@@ -148,7 +178,7 @@ const leftmiddlewall_texture_leftside = loader.load('reception_walltexture.png')
 leftmiddlewall_texture_leftside.magFilter = THREE.LinearFilter;
 leftmiddlewall_texture_leftside.minFilter = THREE.LinearMipmapLinearFilter;
 leftmiddlewall_texture_leftside.anisotropy = 16;
-leftmiddlewall_texture_leftside.encoding = THREE.sRGBColorSpace;
+leftmiddlewall_texture_leftside.colorSpace = THREE.SRGBColorSpace;
 
 leftmiddlewall_texture_leftside.wrapS = THREE.RepeatWrapping;
 leftmiddlewall_texture_leftside.repeat.x = -1;
@@ -196,14 +226,15 @@ leftmiddlewall_front.position.set(-2.5, 1.5, -0.001);
 const rightmiddle_wallgeo = new THREE.PlaneGeometry(4.0, 3);
 const rightmiddlewall_material_front = new THREE.MeshStandardMaterial({ color: '#7a4545', side: THREE.BackSide });
 const rightmiddlewall_mesh_front = new THREE.Mesh(rightmiddle_wallgeo, rightmiddlewall_material_front);
-rightmiddlewall_mesh_front.position.set(5.0, 1.5, 0);
+
 rightmiddlewall_mesh_front.rotation.y = Math.PI;//180 degree;
 
 //back side 
 
 const rightmiddlewall_material_back = new THREE.MeshStandardMaterial({ color: '#45557a', side: THREE.BackSide });
 const rightmiddlewall_mesh_back = new THREE.Mesh(rightmiddle_wallgeo, rightmiddlewall_material_back);
-rightmiddlewall_mesh_back.position.set(5.0, 1.5, -0.001);
+rightmiddlewall_mesh_front.position.set(5.0, 1.5, 0);
+rightmiddlewall_mesh_back.position.set(5.0, 1.5, 0);
 
 
 
@@ -211,26 +242,26 @@ rightmiddlewall_mesh_back.position.set(5.0, 1.5, -0.001);
 
 //left
 const middlebottom_wallgeo = new THREE.PlaneGeometry(4, 3);
-const middlebottomwall_material_left = new THREE.MeshStandardMaterial({ color: '#c0beb6', side: THREE.BackSide });
+const middlebottomwall_material_left = new THREE.MeshStandardMaterial({ color: '#cccccc', side: THREE.BackSide });
 const middlebottomwall_mesh_left = new THREE.Mesh(middlebottom_wallgeo, middlebottomwall_material_left);
 middlebottomwall_mesh_left.position.set(1, 1.5, 2);
 middlebottomwall_mesh_left.rotation.y = Math.PI / 2;//90 degree;
 
 //right
-const middlebottomwall_material_right = new THREE.MeshStandardMaterial({ color: '#46294d', side: THREE.FrontSide });
+const middlebottomwall_material_right = new THREE.MeshStandardMaterial({ color: '#b39191', side: THREE.FrontSide });
 const middlebottomwall_mesh_right = new THREE.Mesh(middlebottom_wallgeo, middlebottomwall_material_right);
 middlebottomwall_mesh_right.position.set(1.001, 1.5, 2);
 middlebottomwall_mesh_right.rotation.y = Math.PI / 2;//90 degree;
 
 
 const Top_middleWall_texture = loader.load('wall_panel.jpg');
-Top_middleWall_texture.minFilter = THREE.LinearMipMapLinearFilter;
+Top_middleWall_texture.minFilter = THREE.LinearMipmapLinearFilter;
 Top_middleWall_texture.magFilter = THREE.LinearFilter;
 
 Top_middleWall_texture.wrapS = THREE.RepeatWrapping;
 Top_middleWall_texture.wrapT = THREE.RepeatWrapping;
 
-Top_middleWall_texture.encoding = THREE.sRGBColorSpace;
+Top_middleWall_texture.colorSpace = THREE.SRGBColorSpace;
 Top_middleWall_texture.anisotropy = 16;
 
 //new THREE.PointLight(color, intensity, distance, decay)
@@ -264,6 +295,19 @@ const ambientLight = new THREE.AmbientLight('#FFFFFF', 1.5);
 const directionalLight = new THREE.DirectionalLight('#FFFFFF', 2.0);
 directionalLight.position.set(10, 15, 10);
 directionalLight.castShadow = true;
+
+directionalLight.shadow.mapSize.width = 2048;
+directionalLight.shadow.mapSize.height = 2048;
+directionalLight.shadow.camera.near = 1;
+directionalLight.shadow.camera.far = 40;
+directionalLight.shadow.camera.left = -10;
+directionalLight.shadow.camera.right = 10;
+directionalLight.shadow.camera.top = 10;
+directionalLight.shadow.camera.bottom = -8;
+directionalLight.shadow.bias = -0.0005; // reduces shadow acne artifacts
+
+
+
 scene.add(directionalLight);
 const pointLight = new THREE.PointLight('#FFFFFF', 0.8);
 pointLight.position.set(-10, 5, 5);
@@ -839,7 +883,59 @@ const table1Chairs = addChairsAroundTable({
 });
 scene.add(table1Chairs);
 
+const picture_texture = loader.load('picture1.jpg');
+picture_texture.minFilter = THREE.LinearMipmapLinearFilter;
+picture_texture.magFilter = THREE.LinearFilter;
+picture_texture.colorSpace = THREE.SRGBColorSpace;
+picture_texture.anisotropy = 16;
 
+const picture1_texture = loader.load('picture2.jpg');
+picture1_texture.minFilter = THREE.LinearMipmapLinearFilter;
+picture1_texture.magFilter = THREE.LinearFilter;
+picture1_texture.colorSpace = THREE.SRGBColorSpace;
+picture1_texture.anisotropy = 16;
+
+const picture2_texture = loader.load('picture3.jpg');
+picture2_texture.minFilter = THREE.LinearMipmapLinearFilter;
+picture2_texture.magFilter = THREE.LinearFilter;
+picture2_texture.colorSpace = THREE.SRGBColorSpace;
+picture2_texture.anisotropy = 16;
+
+
+function CreatePictureFrame({
+    PictureWidth = 0.8,
+    PictureHeight = 0.6,
+    PictureDepth = 0.9,
+    x = 1.0,
+    y = 3.2,
+    z = 2.0,
+    rotationY = Math.PI,
+    texture
+} = {}) {
+    const PictureFrame = new THREE.Group();
+
+
+
+    const frame_geometry = new THREE.PlaneGeometry(PictureWidth + 0.08, PictureHeight + 0.07);
+    const frame_material = new THREE.MeshStandardMaterial({ color: '#000000', side: THREE.DoubleSide })
+    const frame_Mesh = new THREE.Mesh(frame_geometry, frame_material);
+
+    frame_Mesh.position.set(x, y, z);
+    frame_Mesh.rotation.y = rotationY;
+
+    PictureFrame.add(frame_Mesh);
+
+    const picture_geometry = new THREE.PlaneGeometry(PictureWidth, PictureHeight);
+    const picture_material = new THREE.MeshStandardMaterial({ map: texture, color: '#dddddd', side: THREE.DoubleSide })
+    const picture_Mesh = new THREE.Mesh(picture_geometry, picture_material);
+
+    picture_Mesh.position.set(x, y, z + 0.03);
+    picture_Mesh.rotation.y = rotationY;
+
+    PictureFrame.add(picture_Mesh);
+
+    return PictureFrame;
+}
 
 
 
@@ -970,6 +1066,22 @@ scene.add(plant1);
 const plant2 = createPottedPlant({ x: 0.0, z: -0.5, y: 0, foliageRadius: 0.3 });
 scene.add(plant2);
 
+
+//PictureWidth=0.8,
+//PictureHeight=0.6,
+//PictureDepth=0.9,
+//x=1.0,
+//y=3.2,
+//z=2.0,
+//rotationY=Math.PI
+const picFrame = CreatePictureFrame({ x: 4.0, y: 2.0, PictureWidth: 1.0, PictureHeight: 1.4, z: 0.06, texture: picture_texture });
+scene.add(picFrame);
+
+const picFrame1 = CreatePictureFrame({ x: 5.3, y: 1.2, PictureWidth: 1.0, PictureHeight: 1.0, z: 0.06, texture: picture1_texture });
+scene.add(picFrame1);
+
+const picFrame2 = CreatePictureFrame({ x: 5.3, y: 2.38, PictureWidth: 1.0, PictureHeight: 1.0, z: 0.06, texture: picture2_texture });
+scene.add(picFrame2);
 
 function AnimateFrame(t = 0) {
     requestAnimationFrame(AnimateFrame);
