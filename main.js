@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 
 
@@ -12,14 +12,18 @@ const h = window.innerHeight;
 //set up renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(w, h);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // sharper on high-DPI screens
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3.0)); // sharper on high-DPI screens
 renderer.outputColorSpace = THREE.SRGBColorSpace;   // correct color output — fixes dark/washed textures
 renderer.toneMapping = THREE.ACESFilmicToneMapping; // natural brightness falloff instead of flat/dark
-renderer.toneMappingExposure = 1.15;                // nudge overall scene brightness up
+renderer.toneMappingExposure = 2.0;                // nudge overall scene brightness up
+
 
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
+
+
+
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
@@ -62,6 +66,9 @@ function onWindowResize() {
     renderer.setSize(newW, newH);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 }
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+const envMap = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+pmremGenerator.dispose();
 
 //controls.update();
 
@@ -109,6 +116,13 @@ back_wall_texture.repeat.x = -1;
 back_wall_texture.offset.x = 1;
 
 
+const topMiddlewall_texture = loader.load("download(6).jpg");
+topMiddlewall_texture.minFilter = THREE.LinearMipMapLinearFilter;
+topMiddlewall_texture.magFilter = THREE.LinearFilter;
+topMiddlewall_texture.wrapS = THREE.RepeatWrapping;
+topMiddlewall_texture.colorSpace = THREE.SRGBColorSpace;
+topMiddlewall_texture.anisotropy = 16;
+
 const floor_geo = new THREE.PlaneGeometry(14, 8);
 const floor_material = new THREE.MeshStandardMaterial({ map: floor_texture, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide });
 const floor_mesh = new THREE.Mesh(floor_geo, floor_material);
@@ -116,11 +130,16 @@ floor_mesh.rotation.x = -Math.PI / 2; // Rotate to lay flat
 floor_mesh.receiveShadow = true; // surfaces that should receive shadows have reciveShadow=true
 
 
-const front_wallgeo = new THREE.PlaneGeometry(14, 3);
-const frontwall_material = new THREE.MeshStandardMaterial({ map: left_wall_texture, color: '#d0d0d0', side: THREE.DoubleSide });
-const frontwall_mesh = new THREE.Mesh(front_wallgeo, frontwall_material);
-frontwall_mesh.position.set(0, 1.5, 4);
+const front_leftwallgeo = new THREE.PlaneGeometry(8, 3);
+const frontleftwall_material = new THREE.MeshStandardMaterial({ map: left_wall_texture, color: '#d0d0d0', side: THREE.DoubleSide });
+const frontleftwall_mesh = new THREE.Mesh(front_leftwallgeo, frontleftwall_material);
+frontleftwall_mesh.position.set(-3.0, 1.5, 4);
 
+
+const front_rightwallgeo = new THREE.PlaneGeometry(6, 3);
+const frontrightwall_material = new THREE.MeshStandardMaterial({ color: '#afadad', side: THREE.DoubleSide });
+const frontrightwall_mesh = new THREE.Mesh(front_rightwallgeo, frontrightwall_material);
+frontrightwall_mesh.position.set(4.0, 1.5, 4);
 
 
 const back_wallgeo = new THREE.PlaneGeometry(12, 3);
@@ -131,7 +150,7 @@ backwall_mesh.rotation.y = Math.PI;//180 degree;
 
 
 const back_wall_rightgeo = new THREE.PlaneGeometry(2.0, 3);
-const backwall_right_material = new THREE.MeshStandardMaterial({ color: '#5c1b1b', side: THREE.DoubleSide });
+const backwall_right_material = new THREE.MeshStandardMaterial({ color: '#aab9c8', side: THREE.DoubleSide });
 const backwall_right_mesh = new THREE.Mesh(back_wall_rightgeo, backwall_right_material);
 backwall_right_mesh.position.set(6.0, 1.5, -4);
 backwall_right_mesh.rotation.y = Math.PI;//180 degree;
@@ -146,18 +165,36 @@ backwall_back_mesh.rotation.y = Math.PI;//180 degree;
 
 
 
-const left_wallgeo = new THREE.PlaneGeometry(8, 3);
-const leftwall_material = new THREE.MeshStandardMaterial({ map: left_wall_texture, color: '#cbcaca', roughness: 0.3, metalness: 0.5, side: THREE.DoubleSide });
-const leftwall_mesh = new THREE.Mesh(left_wallgeo, leftwall_material);
-leftwall_mesh.position.set(-7, 1.5, 0);
-leftwall_mesh.rotation.y = Math.PI / 2;//90 degree;
+const leftfront_wallgeo = new THREE.PlaneGeometry(4, 3);
+const leftfrontwall_material = new THREE.MeshStandardMaterial({ map: left_wall_texture, color: '#cbcaca', roughness: 0.3, metalness: 0.5, side: THREE.DoubleSide });
+const leftfrontwall_mesh = new THREE.Mesh(leftfront_wallgeo, leftfrontwall_material);
+leftfrontwall_mesh.position.set(-7, 1.5, 2.0);
+leftfrontwall_mesh.rotation.y = Math.PI / 2;//90 degree;
+
+const leftback_wallgeo = new THREE.PlaneGeometry(4, 3);
+const leftbackwall_material = new THREE.MeshStandardMaterial({ color: '#cbcaca', roughness: 0.3, metalness: 0.5, side: THREE.DoubleSide });
+const leftbackwall_mesh = new THREE.Mesh(leftback_wallgeo, leftbackwall_material);
+leftbackwall_mesh.position.set(-7, 1.5, -2.0);
+leftbackwall_mesh.rotation.y = Math.PI / 2;//90 degree;
 
 
-const right_wallgeo = new THREE.PlaneGeometry(8, 3);
-const rightwall_material = new THREE.MeshStandardMaterial({ color: '#7F82BB', side: THREE.DoubleSide });
-const rightwall_mesh = new THREE.Mesh(right_wallgeo, rightwall_material);
-rightwall_mesh.position.set(7, 1.5, 0);
-rightwall_mesh.rotation.y = -Math.PI / 2;//90 degree;
+
+const rightfront_wallgeo = new THREE.PlaneGeometry(4, 3);
+const rightfrontwall_material = new THREE.MeshStandardMaterial({ color: '#7F82BB', side: THREE.DoubleSide });
+const rightfrontwall_mesh = new THREE.Mesh(rightfront_wallgeo, rightfrontwall_material);
+rightfrontwall_mesh.position.set(7, 1.5, 2.0);
+rightfrontwall_mesh.rotation.y = -Math.PI / 2;//90 degree;
+
+
+const rightback_wallgeo = new THREE.PlaneGeometry(4, 3);
+const rightbackwall_material = new THREE.MeshStandardMaterial({ map: topMiddlewall_texture, roughness: 0.1, metalness: 0.1, color: '#ececec', side: THREE.DoubleSide });
+const rightbackwall_mesh = new THREE.Mesh(rightback_wallgeo, rightbackwall_material);
+rightbackwall_mesh.position.set(7, 1.5, -2.0);
+rightbackwall_mesh.rotation.y = -Math.PI / 2;//90 degree;
+
+
+
+
 
 const leftmiddle_texture = loader.load('wall_texture_2.jpg');
 //leftmiddle_texture.magFilter=THREE.LinearFilter;
@@ -223,19 +260,24 @@ leftmiddlewall_front.position.set(-2.5, 1.5, -0.001);
 
 
 //front side 
-const rightmiddle_wallgeo = new THREE.PlaneGeometry(4.0, 3);
+const rightmiddle_wallgeo = new THREE.PlaneGeometry(4.49, 3);
 const rightmiddlewall_material_front = new THREE.MeshStandardMaterial({ color: '#7a4545', side: THREE.BackSide });
 const rightmiddlewall_mesh_front = new THREE.Mesh(rightmiddle_wallgeo, rightmiddlewall_material_front);
 
 rightmiddlewall_mesh_front.rotation.y = Math.PI;//180 degree;
 
 //back side 
+const rightmiddlewall_leftback_geo = new THREE.PlaneGeometry(2.0, 3);
+const rightmiddlewall_left_material_back = new THREE.MeshStandardMaterial({ color: '#aab9c8', side: THREE.BackSide });
+const rightmiddlewall_left_mesh_back = new THREE.Mesh(rightmiddlewall_leftback_geo, rightmiddlewall_left_material_back);
 
-const rightmiddlewall_material_back = new THREE.MeshStandardMaterial({ color: '#45557a', side: THREE.BackSide });
-const rightmiddlewall_mesh_back = new THREE.Mesh(rightmiddle_wallgeo, rightmiddlewall_material_back);
-rightmiddlewall_mesh_front.position.set(5.0, 1.5, 0);
-rightmiddlewall_mesh_back.position.set(5.0, 1.5, 0);
+const rightmiddlewall_right_material_back = new THREE.MeshStandardMaterial({ color: '#2c5379', side: THREE.BackSide });
+const rightmiddlewall_right_mesh_back = new THREE.Mesh(rightmiddlewall_leftback_geo, rightmiddlewall_right_material_back);
 
+
+rightmiddlewall_mesh_front.position.set(4.77, 1.5, 0);
+rightmiddlewall_left_mesh_back.position.set(6.0, 1.5, 0);
+rightmiddlewall_right_mesh_back.position.set(4.0, 1.5, 0);
 
 
 
@@ -271,10 +313,11 @@ Top_middle_Wall_pointLight.castShadow = true;
 
 //right 
 
-const topmiddle_wallgeo = new THREE.PlaneGeometry(4, 3);
+
+const topmiddle_wallgeo = new THREE.PlaneGeometry(3, 3);
 const topmiddlewall_material_left = new THREE.MeshStandardMaterial({ map: Top_middleWall_texture, roughness: 0.2, metalness: 0.1, color: '#FFFFFF', side: THREE.BackSide });
 const topmiddlewall_mesh_left = new THREE.Mesh(topmiddle_wallgeo, topmiddlewall_material_left);
-topmiddlewall_mesh_left.position.set(5, 1.5, -2);
+topmiddlewall_mesh_left.position.set(5, 1.5, -2.5);
 topmiddlewall_mesh_left.rotation.y = Math.PI / 2;//90 degree;
 
 
@@ -282,16 +325,16 @@ topmiddlewall_mesh_left.rotation.y = Math.PI / 2;//90 degree;
 
 //right 
 
-const topmiddlewall_material_right = new THREE.MeshStandardMaterial({ color: '#7b553b', side: THREE.FrontSide });
+const topmiddlewall_material_right = new THREE.MeshStandardMaterial({ color: '#aab9c8', side: THREE.FrontSide });
 const topmiddlewall_mesh_right = new THREE.Mesh(topmiddle_wallgeo, topmiddlewall_material_right);
-topmiddlewall_mesh_right.position.set(5.001, 1.5, -2);
+topmiddlewall_mesh_right.position.set(5.001, 1.5, -2.5);
 topmiddlewall_mesh_right.rotation.y = Math.PI / 2;//90 degree;
 
 
 
 
 
-const ambientLight = new THREE.AmbientLight('#FFFFFF', 1.5);
+const ambientLight = new THREE.AmbientLight('#FFFFFF', 1.0);
 const directionalLight = new THREE.DirectionalLight('#FFFFFF', 2.0);
 directionalLight.position.set(10, 15, 10);
 directionalLight.castShadow = true;
@@ -309,7 +352,7 @@ directionalLight.shadow.bias = -0.0005; // reduces shadow acne artifacts
 
 
 scene.add(directionalLight);
-const pointLight = new THREE.PointLight('#FFFFFF', 0.8);
+const pointLight = new THREE.PointLight('#FFFFFF', 1.0);
 pointLight.position.set(-10, 5, 5);
 scene.add(pointLight);
 
@@ -363,7 +406,7 @@ function createTable({
     const table = new THREE.Group();
 
     // --- Tabletop ---
-    const topGeo = new THREE.BoxGeometry(width, topThickness, depth);
+    const topGeo = new RoundedBoxGeometry(width, topThickness, depth, 1, 0.06)
     const topMat = new THREE.MeshStandardMaterial({
         map: table_texture,
         color: '#ffffff8e',
@@ -441,7 +484,7 @@ function createSofa({
     });
 
     // Seat base
-    const seatGeo = new THREE.BoxGeometry(width, seatHeight, depth);
+    const seatGeo = new RoundedBoxGeometry(width, seatHeight, depth, 1, 0.05);
     const seat = new THREE.Mesh(seatGeo, sofaMat);
     seat.position.set(0, seatHeight / 2, 0);
     seat.castShadow = true;
@@ -449,14 +492,14 @@ function createSofa({
     sofa.add(seat);
 
     // Backrest
-    const backGeo = new THREE.BoxGeometry(width, backHeight, 0.2);
+    const backGeo = new RoundedBoxGeometry(width, backHeight, 0.2, 1, 0.05);
     const back = new THREE.Mesh(backGeo, sofaMat);
     back.position.set(0, seatHeight + backHeight / 2, -depth / 2 + 0.1);
     back.castShadow = true;
     sofa.add(back);
 
     // Armrests
-    const armGeo = new THREE.BoxGeometry(armWidth, seatHeight + 0.25, depth);
+    const armGeo = new RoundedBoxGeometry(armWidth, seatHeight + 0.25, depth, 1, 0.04);
     [width / 2 - armWidth / 2, -width / 2 + armWidth / 2].forEach((ax) => {
         const arm = new THREE.Mesh(armGeo, sofaMat);
         arm.position.set(ax, (seatHeight + 0.25) / 2, 0);
@@ -550,7 +593,7 @@ function createOfficeChair({
     const frameMat = new THREE.MeshStandardMaterial({ color: frameColor, roughness: 0.4, metalness: 0.6 });
 
     // Seat cushion
-    const seatGeo = new THREE.BoxGeometry(seatWidth, 0.08, seatDepth);
+    const seatGeo = new RoundedBoxGeometry(seatWidth, 0.08, seatDepth, 1, 0.04);
     const seat = new THREE.Mesh(seatGeo, padMat);
     seat.position.set(0, seatHeight, 0);
     seat.castShadow = true;
@@ -558,7 +601,7 @@ function createOfficeChair({
     chair.add(seat);
 
     // Backrest (slightly reclined)
-    const backGeo = new THREE.BoxGeometry(seatWidth * 0.9, backHeight, 0.08);
+    const backGeo = new RoundedBoxGeometry(seatWidth * 0.9, backHeight, 0.08, 1, 0.04);
     const back = new THREE.Mesh(backGeo, padMat);
     back.position.set(0, seatHeight + backHeight / 2, -seatDepth / 2 + 0.05);
     back.rotation.x = -0.12;
@@ -629,7 +672,7 @@ function createCurvedBackChair({
     const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.05 });
 
     // Seat
-    const seatGeo = new THREE.BoxGeometry(seatWidth, 0.05, seatDepth);
+    const seatGeo = new RoundedBoxGeometry(seatWidth, 0.05, seatDepth, 1, 0.04);
     const seat = new THREE.Mesh(seatGeo, mat);
     seat.position.set(0, seatHeight, 0);
     seat.castShadow = true;
@@ -937,33 +980,202 @@ function CreatePictureFrame({
     return PictureFrame;
 }
 
+function Createcabinet({
+    width = 2.0,
+    height = 0.5,
+    depth = 1.0,
+    x = 0.0,
+    y = 0.15,
+    z = -1.0,
+    Cabinetcolor = '#FFFFFF',
+    Y_Rotation = Math.PI
+} = {}) {
+    const Cabinet = new THREE.Group();
 
+    const Cabinet_geometry = new THREE.BoxGeometry(width, height, depth);
+    const Cabinet_Material = new THREE.MeshStandardMaterial({ color: Cabinetcolor, roughness: 0.3, metalness: 0.5 });
+    const Cabinet_Mesh = new THREE.Mesh(Cabinet_geometry, Cabinet_Material);
+    Cabinet_Mesh.position.set(x, y, z);
+    Cabinet_Mesh.rotation.y = Y_Rotation;
+
+    Cabinet.add(Cabinet_Mesh);
+
+    //const first_Panelgeo=new THREE.PlaneGeometry(0.8,0.5);
+    //const first_Panel_material=new THREE.MeshStandardMaterial({color:'#0a0101'});
+    //const first_Panel_mesh=new THREE.Mesh(first_Panelgeo,first_Panel_material);
+    //first_Panel_mesh.position.set(x+0.2,y+0.02,z+0.8);
+    //first_Panel_mesh.rotation.y=Y_Rotation;
+
+    //Cabinet.add(first_Panel_mesh);
+
+    //const second_Panelgeo=new THREE.PlaneGeometry(0.5,0.5);
+    //const second_Panel_material=new THREE.MeshStandardMaterial({color:'#0a0101'});
+    //const second_Panel_mesh=new THREE.Mesh(second_Panelgeo,second_Panel_material);
+    //second_Panel_mesh.position.set(x+0.2,y+0.02,z-0.3);
+    //second_Panel_mesh.rotation.y=Y_Rotation;
+
+    //Cabinet.add(second_Panel_mesh);
+
+
+
+    return Cabinet;
+}
+
+const Cabinet = Createcabinet({ x: 5.2, y: (0.7 / 2) + 2.1, z: -2.5, Cabinetcolor: '#dfdddd', Y_Rotation: Math.PI / 2, height: 0.7, width: 2.8, depth: 0.31 });
+scene.add(Cabinet);
+
+//const Cabinet1=Createcabinet({x:6.2,y:(0.7/2)+2.1,z:-3.86,Cabinetcolor:'#dfdddd',Y_Rotation:Math.PI,height:0.7,width:1.5,depth:0.24});
+//scene.add(Cabinet1);
+
+
+function CreateGlassDoor({
+    doorWidth = 2.0,
+    doorHeight = 3.0,
+    x = 0.0,
+    y = 0.0,
+    z = 0.0,
+    frameColor = '#3a3a3a',
+    handleColor = '#d8d8d8',
+    rotationY = 0
+} = {}) {
+    const Door = new THREE.Group();
+    const frame_thickness = 0.03;
+    const frameDepth = 0.08;
+    const frame_Material = new THREE.MeshStandardMaterial(
+        {
+            color: frameColor,
+            roughness: 0.3,
+            metalness: 0.8
+        });
+
+    const DoorFrameShape = new THREE.Shape();
+
+    DoorFrameShape.moveTo(-doorWidth / 2, -doorHeight / 2);
+    DoorFrameShape.lineTo(doorWidth / 2, -doorHeight / 2);
+    DoorFrameShape.lineTo(doorWidth / 2, doorHeight / 2);
+    DoorFrameShape.lineTo(-doorWidth / 2, doorHeight / 2);
+    DoorFrameShape.lineTo(-doorWidth / 2, -doorHeight / 2);
+
+    const innerWidth = doorWidth - frame_thickness * 2;
+    const innerHeight = doorHeight - frame_thickness * 2;
+
+    const hole = new THREE.Path();
+
+    hole.moveTo(-innerWidth / 2, -innerHeight / 2);
+    hole.lineTo(innerWidth / 2, -innerHeight / 2);
+    hole.lineTo(innerWidth / 2, innerHeight / 2);
+    hole.lineTo(-innerWidth / 2, innerHeight / 2);
+    hole.lineTo(-innerWidth / 2, -innerHeight / 2);
+    DoorFrameShape.holes.push(hole);
+
+    const frameGeo = new THREE.ExtrudeGeometry(DoorFrameShape, { depth: frameDepth, bevelEnabled: false, });
+    frameGeo.center();// centers the extrusion depth around z=0 
+    const frameMesh = new THREE.Mesh(frameGeo, frame_Material);
+    frameMesh.castShadow = true;
+    frameMesh.receiveShadow = true;
+    Door.add(frameMesh);
+
+    const glassMaterial = new THREE.MeshPhysicalMaterial({
+        color: '#eef7f7',
+        metalness: 0,
+        roughness: 0.03,
+        transmission: 0.5,
+        thickness: 0.02,
+        ior: 1.5,
+        envMap: envMap,
+        envMapIntensity: 0.6,
+        clearcoat: 0.3,
+        clearcoatRoughness: 0.1,
+        transparent: false,
+        side: THREE.DoubleSide,   // render both faces of the plane
+    });
+
+    const glassGeo = new THREE.PlaneGeometry(innerWidth, innerHeight);
+    const glassMesh = new THREE.Mesh(glassGeo, glassMaterial);
+    glassMesh.position.set(0, 0, 0); // sits at the frame's mid-depth
+    Door.add(glassMesh);
+    // --- Handle bar ---
+    const handleMaterial = new THREE.MeshStandardMaterial({
+        color: handleColor,
+        roughness: 0.25,
+        metalness: 0.9,
+    });
+
+    const handleGeo = new THREE.CylinderGeometry(0.015, 0.015, doorHeight * 0.35, 12);
+    const handleMesh = new THREE.Mesh(handleGeo, handleMaterial);
+    handleMesh.position.set(doorWidth / 2 - 0.15, 0, frameDepth / 2 + 0.03);
+    handleMesh.castShadow = true;
+    Door.add(handleMesh);
+
+    Door.position.set(x, y, z);
+    Door.rotation.y = rotationY;
+
+    return Door;
+
+
+
+}
+
+const glassDoor1 = CreateGlassDoor({
+    doorWidth: 0.95,
+    doorHeight: 3.0,
+    x: 5,
+    y: 3.0 / 2, // adjust y so the door sits on the floor if wallHeight center was 1.5
+    z: -0.5,
+    rotationY: -Math.PI / 2,
+});
+scene.add(glassDoor1);
+
+
+const glassDoor2 = CreateGlassDoor({
+    doorWidth: 1.5,
+    doorHeight: 3.0,
+    x: 1.73,
+    y: 3.0 / 2, // adjust y so the door sits on the floor if wallHeight center was 1.5
+    z: 0,
+    rotationY: Math.PI,
+});
+scene.add(glassDoor2);
+
+const glassDoor3 = CreateGlassDoor({
+    doorWidth: 0.96,
+    doorHeight: 3.0,
+    x: -6.5,
+    y: 3.0 / 2, // adjust y so the door sits on the floor if wallHeight center was 1.5
+    z: 0,
+    rotationY: Math.PI,
+});
+scene.add(glassDoor3);
 
 
 scene.add(ambientLight);
 scene.add(floor_mesh);
-scene.add(frontwall_mesh);
+scene.add(frontleftwall_mesh);
 scene.add(backwall_mesh);
 scene.add(backwall_right_mesh);
-scene.add(leftwall_mesh);
-scene.add(rightwall_mesh);
+scene.add(leftfrontwall_mesh);
+scene.add(rightfrontwall_mesh);
 scene.add(leftmiddlewall_mesh_back);
 scene.add(leftmiddlewall_front);
 scene.add(middlebottomwall_mesh_right);
 scene.add(topmiddlewall_mesh_left);
 scene.add(rightmiddlewall_mesh_front);
-scene.add(rightmiddlewall_mesh_back);
+scene.add(rightmiddlewall_left_mesh_back);
 scene.add(middlebottomwall_mesh_left);
 scene.add(topmiddlewall_mesh_right);
 scene.add(backwall_back_mesh);
 scene.add(Top_middle_Wall_pointLight);
+scene.add(frontrightwall_mesh);
+scene.add(rightbackwall_mesh);
+scene.add(leftbackwall_mesh);
+scene.add(rightmiddlewall_right_mesh_back);
 const table1 = createTable({ width: 5.0, depth: 2.0, x: -3.2, z: 2 });
 scene.add(table1);
 
 
 
-const sofa1 = createSofa({ width: 3.5, x: 1.5, z: -3 });
-const sofa2 = createSofa({ width: 2.5, x: 4.0, z: -1.5, rotationY: -Math.PI / 2 });
+const sofa1 = createSofa({ width: 3.0, x: 0.5, z: -3.3 });
+const sofa2 = createSofa({ width: 2.5, x: 4.0, z: -2.3, rotationY: -Math.PI / 2 });
 
 scene.add(sofa1);
 scene.add(sofa2);
@@ -972,16 +1184,16 @@ const reception1 = createReception({ frontWidth: 3.5, frontHeight: 1.25, z: -1.5
 scene.add(reception1);
 
 
-const PC_table = CreateComputerTable({ sideWidth: 1.0, sideHeight: 1.0, sideDepth: 0.25, topWidth: 2.5, topHeight: 0.2, topDepth: 1.3, x: 1.8, z: 2.0, y: 0.5, rotationY: Math.PI, backX: 1.2 });
+const PC_table = CreateComputerTable({ sideWidth: 1.0, sideHeight: 1.0, sideDepth: 0.25, topWidth: 2.5, topHeight: 0.2, topDepth: 1.3, x: 1.8, z: 2.7, y: 0.5, rotationY: Math.PI, backX: 1.2 });
 scene.add(PC_table);
 //x:1.8,z:2.0,y:0.5
 const tableTopSurfaceY = 0.5 + 1.0 / 2 + 0.2 / 2; // y + sideHeight/2 + topHeight/2 = 1.1 (mesh center)
 // top surface = 1.1 + 0.2/2 = 1.2
 
 const Screen1 = CreateScreen({
-    x: 1.2,                     // match table top's x (x - 0.1)
+    x: 1.4,                     // match table top's x (x - 0.1)
     y: tableTopSurfaceY + 0.6, // sit right on top surface + half screen thickness
-    z: 1.5,
+    z: 2.0,
     screenWidth: 1.3,
     screenHeight: 0.72,
     screenDepth: 0.05,
@@ -990,9 +1202,9 @@ const Screen1 = CreateScreen({
 scene.add(Screen1);
 
 const Screen = CreateScreen({
-    x: 1.6,                     // match table top's x (x - 0.1)
+    x: 1.76,                     // match table top's x (x - 0.1)
     y: tableTopSurfaceY + 0.6, // sit right on top surface + half screen thickness
-    z: 2.8,
+    z: 3.29,
     screenWidth: 1.3,
     screenHeight: 0.72,
     screenDepth: 0.05,
@@ -1002,7 +1214,7 @@ scene.add(Screen);
 
 const chair1 = createOfficeChair({
     x: 1.8 + 0.9,
-    z: 2.0,
+    z: 2.6,
     y: 0.5,
     rotationY: -Math.PI / 2,
     color: '#3a3a3a',
